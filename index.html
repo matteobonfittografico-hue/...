@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <title>La Prima Guerra Mondiale – Studio e Quiz</title>
+  <style>
+    body {
+      font-family: Georgia, "Times New Roman", serif;
+      margin: 0;
+      background: linear-gradient(rgba(20,30,20,0.85), rgba(20,30,20,0.85)),
+        url("https://upload.wikimedia.org/wikipedia/commons/3/3a/WWI_Trench_warfare.jpg");
+      background-position: center;
+      background-size: cover;
+      background-attachment: fixed;
+      color: #ffffff;
+    }
+    header {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .title-3d {
+      font-size: 42px;
+      text-shadow: 1px 1px 0 #1f2614, 3px 3px 6px rgba(0,0,0,0.6);
+    }
+    main {
+      max-width: 900px;
+      margin: auto;
+      background: rgba(245,245,220,0.95);
+      color: #2b2b2b;
+      padding: 30px;
+      border-radius: 10px;
+    }
+    button {
+      padding: 12px 25px;
+      font-size: 16px;
+      background: #4b5320;
+      color: #f5f5dc;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 10px 0;
+    }
+    button:hover { background: #3a4218; }
+    .quiz-option {
+      display: block;
+      padding: 10px;
+      margin: 8px 0;
+      background: #f0f0d8;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .result {
+      font-size: 22px;
+      font-weight: bold;
+      margin-top: 30px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1 class="title-3d">La Prima Guerra Mondiale (1914–1918)</h1>
+  <p>Studio interattivo e quiz</p>
+</header>
+
+<main>
+  <!-- HOME -->
+  <div id="home">
+    <h2>Home</h2>
+    <p><strong>Livello di preparazione:</strong> <span id="livello">Non valutato</span></p>
+    <p><strong>Risposte corrette:</strong> <span id="corrette">0</span></p>
+    <p><strong>Risposte sbagliate:</strong> <span id="sbagliate">0</span></p>
+    <p><strong>Numero quiz svolti:</strong> <span id="quizSvolti">0</span></p>
+    <button onclick="mostraQuiz()">Vai al Quiz</button><br>
+    <button onclick="mostraCapitolo()">Vai al Capitolo</button>
+  </div>
+
+  <!-- CAPITOLO -->
+  <div id="capitolo" style="display:none">
+    <h2>Capitoli di approfondimento</h2>
+    <div id="capList">
+      <button onclick="mostraParagrafo(0)">1. Contesto prima dello scoppio</button>
+      <button onclick="mostraParagrafo(1)">2. La scintilla e l'allargamento</button>
+      <button onclick="mostraParagrafo(2)">3. Guerra di trincea</button>
+      <button onclick="mostraParagrafo(3)">4. Unioni sacre</button>
+      <button onclick="mostraParagrafo(4)">5. L'Italia e l'intervento</button>
+      <button onclick="mostraParagrafo(5)">6. Il 1916</button>
+      <button onclick="mostraParagrafo(6)">7. Tentativi di pace</button>
+      <button onclick="mostraParagrafo(7)">8. Il 1917</button>
+      <button onclick="mostraParagrafo(8)">9. Caporetto</button>
+      <button onclick="mostraParagrafo(9)">10. Il 1918</button>
+      <button onclick="mostraParagrafo(10)">11. La pace</button>
+    </div>
+    <div id="testoParagrafo"></div>
+    <button onclick="tornaHome()">Torna alla Home</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizSection" style="display:none">
+    <div id="quiz"></div>
+    <div id="risultato" class="result"></div>
+    <button onclick="tornaHome()">Torna alla Home</button>
+  </div>
+</main>
+
+<script>
+// ===== RIFERIMENTI =====
+const home = document.getElementById('home');
+const capitolo = document.getElementById('capitolo');
+const quizSection = document.getElementById('quizSection');
+const quiz = document.getElementById('quiz');
+const risultato = document.getElementById('risultato');
+const corretteSpan = document.getElementById('corrette');
+const sbagliateSpan = document.getElementById('sbagliate');
+const livelloSpan = document.getElementById('livello');
+const quizSvoltiSpan = document.getElementById('quizSvolti');
+const testoParagrafo = document.getElementById('testoParagrafo');
+const capList = document.getElementById('capList');
+
+// ===== STATO =====
+let punteggioTotale = 0;
+let erroriTotali = 0;
+let quizSvolti = 0;
+
+// ===== QUIZ =====
+const bancaDomande = [
+  { d: 'Quale evento scatenò la Prima Guerra Mondiale?', r: ['Attentato di Sarajevo','Rivoluzione russa','Trattato di Versailles','Guerre balcaniche'], c: 0, e: 'L’attentato di Sarajevo del 28 giugno 1914 fu la scintilla che fece scoppiare la guerra.' },
+  { d: 'In che anno iniziò la Prima Guerra Mondiale?', r: ['1912','1913','1914','1915'], c: 2, e: 'La guerra iniziò ufficialmente nel 1914.' },
+  { d: 'Quali Stati facevano parte della Triplice Intesa?', r: ['Germania, Austria, Italia','Francia, Russia, Inghilterra','Italia, Francia, Germania','Russia, Austria, Turchia'], c: 1, e: 'La Triplice Intesa era formata da Francia, Russia e Inghilterra.' },
+  { d: 'Quale territorio era conteso tra Francia e Germania?', r: ['Trentino','Alsazia-Lorena','Bosnia','Polonia'], c: 1, e: 'L’Alsazia-Lorena era stata persa dalla Francia nel 1871.' },
+  { d: 'Che tipo di guerra si affermò dopo il 1914?', r: ['Guerra navale','Guerra di trincea','Guerra coloniale','Guerra lampo'], c: 1, e: 'Dopo il fallimento dei piani rapidi prevalse la guerra di trincea.' },
+  { d: 'Quale paese invase il Belgio nel 1914?', r: ['Francia','Germania','Inghilterra','Austria'], c: 1, e: 'La Germania invase il Belgio per colpire la Francia.' },
+  { d: 'Quale impero era in crisi nei Balcani?', r: ['Impero britannico','Impero austro-ungarico','Impero francese','Impero spagnolo'], c: 1, e: 'L’Impero austro-ungarico era fortemente instabile nei Balcani.' },
+  { d: 'Che cosa erano le unioni sacre?', r: ['Alleanze militari','Governi di coalizione','Trattati di pace','Rivolte popolari'], c: 1, e: 'Le unioni sacre erano governi che univano più partiti per sostenere la guerra.' },
+  { d: 'Quale paese rimase neutrale fino al 1915?', r: ['Francia','Germania','Italia','Russia'], c: 2, e: 'L’Italia rimase neutrale fino al maggio 1915.' },
+  { d: 'Con quale patto l’Italia entrò in guerra?', r: ['Patto di Versailles','Patto di Roma','Patto di Londra','Patto di Parigi'], c: 2, e: 'Il Patto di Londra garantì all’Italia promesse territoriali.' },
+  { d: 'Contro chi combatté l’Italia nel 1915?', r: ['Francia','Germania','Austria-Ungheria','Inghilterra'], c: 2, e: 'L’Italia dichiarò guerra all’Austria-Ungheria.' },
+  { d: 'Quale fu una grande battaglia del 1916?', r: ['Caporetto','Verdun','Waterloo','Stalingrado'], c: 1, e: 'Verdun fu una delle battaglie più sanguinose.' },
+  { d: 'Che cos’era la Strafexpedition?', r: ['Un trattato','Un’offensiva austriaca','Una rivolta','Una battaglia navale'], c: 1, e: 'Fu una grande offensiva austro-ungarica contro l’Italia.' },
+  { d: 'Chi uscì dalla guerra nel 1917?', r: ['Italia','Francia','Russia','Inghilterra'], c: 2, e: 'La Russia uscì dopo la Rivoluzione bolscevica.' },
+  { d: 'Quale rivoluzione portò i bolscevichi al potere?', r: ['Rivoluzione francese','Rivoluzione d’Ottobre','Rivoluzione industriale','Rivoluzione americana'], c: 1, e: 'La Rivoluzione d’Ottobre portò Lenin al potere.' },
+  { d: 'Quale trattato fece uscire la Russia dalla guerra?', r: ['Versailles','Brest-Litovsk','Parigi','Vienna'], c: 1, e: 'Il trattato di Brest-Litovsk pose fine alla guerra per la Russia.' },
+  { d: 'Quale paese entrò in guerra nel 1917?', r: ['Giappone','Stati Uniti','Spagna','Cina'], c: 1, e: 'Gli Stati Uniti entrarono nel 1917.' },
+  { d: 'Perché gli USA entrarono in guerra?', r: ['Alleanza con la Germania','Guerra sottomarina','Invasione del Canada','Rivoluzione interna'], c: 1, e: 'La guerra sottomarina tedesca colpì anche interessi americani.' },
+  { d: 'Quale fu una grave sconfitta italiana?', r: ['Verdun','Caporetto','Somme','Marna'], c: 1, e: 'Caporetto fu una grave disfatta per l’Italia.' },
+  { d: 'Chi sostituì Cadorna?', r: ['Badoglio','Diaz','Orlando','Giolitti'], c: 1, e: 'Diaz riorganizzò l’esercito italiano.' },
+  { d: 'Quale battaglia segnò la vittoria italiana?', r: ['Caporetto','Vittorio Veneto','Isonzo','Piave'], c: 1, e: 'Vittorio Veneto segnò la vittoria finale.' },
+  { d: 'In che anno finì la guerra?', r: ['1917','1918','1919','1920'], c: 1, e: 'La guerra terminò nel 1918.' },
+  { d: 'Quale impero si dissolse?', r: ['Russo','Ottomano','Austro-ungarico','Tutti'], c: 3, e: 'Diversi imperi crollarono al termine del conflitto.' },
+  { d: 'Quale trattato punì la Germania?', r: ['Londra','Vienna','Versailles','Berlino'], c: 2, e: 'Il trattato di Versailles impose dure sanzioni alla Germania.' },
+  { d: 'Che cosa perse la Germania?', r: ['Solo colonie','Territori e colonie','Nulla','Solo l’esercito'], c: 1, e: 'La Germania perse territori, colonie e dovette pagare riparazioni.' },
+  { d: 'Che cos’è la vittoria mutilata?', r: ['Una sconfitta militare','Una pace punitiva','Delusione italiana','Una battaglia'], c: 2, e: 'L’Italia non ottenne tutte le terre promesse.' },
+  { d: 'Chi propose i Quattordici Punti?', r: ['Lenin','Wilson','Clemenceau','Orlando'], c: 1, e: 'Wilson propose una pace basata sull’autodeterminazione.' },
+  { d: 'Quale nuovo organismo nacque dopo la guerra?', r: ['ONU','NATO','Società delle Nazioni','UE'], c: 2, e: 'La Società delle Nazioni nacque per garantire la pace.' }
+];
+
+let domande = [];
+let indice = 0;
+let corretteQuiz = 0;
+let erroriQuiz = [];
+
+function mostraQuiz() {
+  home.style.display = 'none';
+  capitolo.style.display = 'none';
+  quizSection.style.display = 'block';
+  risultato.textContent = '';
+  quiz.innerHTML = '';
+  indice = 0;
+  corretteQuiz = 0;
+  erroriQuiz = [];
+
+  domande = [...bancaDomande]
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 30);
+
+  mostraDomanda();
+}
+
+function mostraDomanda() {
+  const q = domande[indice];
+  quiz.innerHTML = `
+    <h3>Domanda ${indice + 1} / ${domande.length}</h3>
+    <p>${q.d}</p>
+    ${q.r.map((risp, i) => `<div class=\"quiz-option\" onclick=\"selezionaRisposta(${i})\">${risp}</div>`).join('')}
+  `;
+}
+
+function selezionaRisposta(i) {
+  const q = domande[indice];
+
+  if (i === q.c) {
+    corretteQuiz++;
+    punteggioTotale++;
+  } else {
+    erroriTotali++;
+    erroriQuiz.push({ domanda: q.d, spiegazione: q.e, rispostaCorretta: q.r[q.c] });
+  }
+
+  indice++;
+
+  if (indice < domande.length) {
+    mostraDomanda();
+  } else {
+    mostraRisultati();
+  }
+}
+
+function mostraRisultati() {
+  quizSvolti++;
+  quizSvoltiSpan.textContent = quizSvolti;
+  quiz.innerHTML = '';
+
+  risultato.innerHTML = `<p>Risposte corrette: ${corretteQuiz} su ${domande.length}</p>`;
+
+  if (erroriQuiz.length > 0) {
+    risultato.innerHTML += '<h3>Risposte errate e spiegazioni</h3>';
+    erroriQuiz.forEach(e => {
+      risultato.innerHTML += `<p style="color:red"><strong>${e.domanda}</strong><br><span style=\"color:green\">${e.spiegazione}</span></p>`;
+    });
+  }
+
+  corretteSpan.textContent = punteggioTotale;
+  sbagliateSpan.textContent = erroriTotali;
+  livelloSpan.textContent = corretteQuiz >= 24 ? 'Ottimo' : corretteQuiz >= 15 ? 'Buono' : 'Base';
+}
+
+// ===== CAPITOLI =====
+
+const paragrafi = [
+`All’inizio del Novecento l’Europa si presentava come il centro economico e politico del mondo, forte di un lungo periodo di crescita industriale, di espansione coloniale e di progresso tecnologico. Tuttavia questa apparente stabilità nascondeva profonde tensioni. Le grandi potenze europee erano coinvolte in una fitta rete di rivalità: la Germania, unificata da poco, aspirava a un ruolo egemonico; la Francia non aveva mai accettato la perdita dell’Alsazia-Lorena; la Gran Bretagna vedeva minacciata la propria supremazia navale; l’Impero austro-ungarico e la Russia si contendevano l’influenza nei Balcani. Le crisi marocchine, l’annessione della Bosnia-Erzegovina e le guerre balcaniche dimostrarono quanto fragile fosse l’equilibrio europeo. Nel 1914 il continente era diviso in due blocchi contrapposti, la Triplice Intesa e la Triplice Alleanza, pronti allo scontro.` ,
+
+`Il 28 giugno 1914 l’assassinio dell’arciduca Francesco Ferdinando d’Asburgo a Sarajevo da parte di un nazionalista serbo-bosniaco fornì il pretesto per lo scoppio della guerra. L’Austria-Ungheria, sostenuta dalla Germania, inviò alla Serbia un ultimatum durissimo. Il rifiuto parziale delle condizioni portò alla dichiarazione di guerra. Da quel momento entrò in funzione il sistema delle alleanze: la Russia intervenne in difesa della Serbia, la Germania dichiarò guerra a Russia e Francia e invase il Belgio neutrale, provocando l’ingresso della Gran Bretagna. Il conflitto, inizialmente locale, divenne rapidamente una guerra europea e poi mondiale, con il coinvolgimento di Giappone e altre potenze.` ,
+
+`I piani militari iniziali prevedevano una guerra breve. In particolare la Germania contava su una rapida vittoria contro la Francia attraverso il piano Schlieffen. Tuttavia la battaglia della Marna bloccò l’avanzata tedesca e trasformò il conflitto in una lunga guerra di posizione. Sul fronte occidentale si scavò una fitta rete di trincee che andava dal Mare del Nord alla Svizzera. La guerra di trincea fu caratterizzata da condizioni di vita durissime, assalti sanguinosi, uso massiccio di artiglieria, gas tossici e mitragliatrici, con enormi perdite umane e pochi avanzamenti territoriali.` ,
+
+`Allo scoppio della guerra, in quasi tutti i paesi europei si formarono governi di “unione sacra”, che mettevano temporaneamente da parte le divisioni politiche interne per sostenere lo sforzo bellico. Industriali, borghesia e gran parte delle masse popolari appoggiarono inizialmente la guerra, visti anche i forti richiami patriottici. Solo alcune minoranze socialiste e pacifiste si opposero apertamente al conflitto. In conferenze come quella di Zimmerwald, i socialisti contrari alla guerra proposero di trasformare il conflitto imperialista in una lotta rivoluzionaria contro i governi.` ,
+
+`L’Italia, pur facendo parte della Triplice Alleanza, nel 1914 proclamò la propria neutralità, sostenendo che l’accordo aveva carattere difensivo. Nel paese si sviluppò un acceso dibattito tra neutralisti e interventisti. I primi, maggioritari, includevano cattolici, socialisti e liberali giolittiani; i secondi comprendevano nazionalisti, irredentisti e parte degli intellettuali. Con il Patto di Londra del 1915, l’Italia ottenne la promessa di compensazioni territoriali e il 24 maggio 1915 entrò in guerra contro gli Imperi Centrali.` ,
+
+`Il 1916 rappresentò l’anno del massimo logoramento. Sul fronte occidentale le battaglie di Verdun e della Somme causarono milioni di morti senza risultati decisivi. Sul fronte italiano l’Austria-Ungheria lanciò la Strafexpedition nel Trentino, nel tentativo di spezzare le difese italiane. L’offensiva fu contenuta e gli italiani conquistarono Gorizia, ma le enormi perdite provocarono una crisi politica che portò alle dimissioni del governo Salandra.` ,
+
+`Tra il 1915 e il 1917 non mancarono tentativi di porre fine al conflitto. Socialisti, governi neutrali, il papa Benedetto XV e il presidente statunitense Wilson avanzarono proposte di pace. Tuttavia nessuna iniziativa ebbe successo, poiché le potenze in guerra non erano disposte a rinunciare ai propri obiettivi territoriali e strategici, convinte di poter ottenere una vittoria decisiva.` ,
+
+`Il 1917 fu un anno di svolta. In Russia la crisi interna portò prima alla caduta dello zar e poi alla Rivoluzione d’Ottobre, che consegnò il potere ai bolscevichi. Il nuovo governo firmò il trattato di Brest-Litovsk, uscendo dalla guerra. Nello stesso anno entrarono in guerra gli Stati Uniti, spinti dalla guerra sottomarina tedesca e dalla volontà di difendere i propri interessi economici e politici, fornendo all’Intesa risorse decisive.` ,
+
+`La sconfitta di Caporetto, nell’ottobre 1917, rappresentò uno dei momenti più drammatici per l’Italia. L’offensiva austro-tedesca sfondò il fronte, causando una disastrosa ritirata, enormi perdite e l’occupazione di ampie zone del Veneto. La crisi portò alla sostituzione del generale Cadorna con Diaz e alla riorganizzazione dell’esercito e del fronte interno, rafforzando la resistenza nazionale.` ,
+
+`Nel 1918 gli Imperi Centrali tentarono un’ultima offensiva, ma l’arrivo massiccio delle truppe americane cambiò definitivamente l’equilibrio del conflitto. Sul fronte italiano, l’offensiva di Vittorio Veneto portò alla sconfitta dell’Austria-Ungheria e all’armistizio del 4 novembre. In Germania rivolte interne e ammutinamenti costrinsero l’imperatore Guglielmo II all’abdicazione, ponendo fine alla guerra.` ,
+
+`La pace fu sancita dai trattati del 1919, in particolare dal trattato di Versailles. Le potenze vincitrici imposero condizioni molto dure ai vinti, soprattutto alla Germania, che perse territori, colonie e fu gravata da pesanti riparazioni. Gli imperi austro-ungarico e ottomano furono smembrati, dando origine a nuovi Stati. L’Italia ottenne solo parte delle terre promesse, alimentando il mito della “vittoria mutilata” e nuove tensioni politiche.`
+];
+
+function mostraCapitolo() {
+  home.style.display = 'none';
+  quizSection.style.display = 'none';
+  capitolo.style.display = 'block';
+  capList.style.display = 'block';
+  testoParagrafo.innerHTML = '';
+}
+
+function mostraParagrafo(i) {
+  capList.style.display = 'none';
+  testoParagrafo.innerHTML = `<p style=\"line-height:1.7\">${paragrafi[i]}</p><button onclick=\"mostraCapitolo()\">Indietro</button>`;
+}
+
+function tornaHome() {
+  quizSection.style.display = 'none';
+  capitolo.style.display = 'none';
+  home.style.display = 'block';
+}
+</script>
+
+</body>
+</html>
